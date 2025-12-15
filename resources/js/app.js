@@ -7,6 +7,70 @@ import { jsPlumb } from 'jsplumb';
 
 window.Alpine = Alpine;
 
+// Implementação da Revisão
+// Registra o componente para gerenciar a UI dos Flashcards baseados no ReviewController
+document.addEventListener('alpine:init', () => {
+    Alpine.data('reviewSession', () => ({
+        showAnswer: false,
+
+        // Inicialização
+        init() {
+            // Foca no container para capturar eventos de teclado se necessário
+            this.$el.focus();
+        },
+
+        // Ação para revelar a resposta do cartão
+        reveal() {
+            this.showAnswer = true;
+        },
+
+        // Submete o formulário baseado no valor do status
+        submitReview(statusValue) {
+            // Procura um botão dentro do componente que tenha o valor correspondente
+            // Ex: <button name="status" value="easy">
+            const button = this.$el.querySelector(`button[name="status"][value="${statusValue}"]`);
+            
+            if (button) {
+                button.click(); // Simula o clique para enviar o formulário
+            } else {
+                console.warn(`Botão para o status '${statusValue}' não encontrado.`);
+            }
+        },
+
+        // Gerenciamento de atalhos de teclado
+        handleKeydown(event) {
+            // Ignora se o usuário estiver digitando em um input/textarea
+            if (['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return;
+
+            // 1. Revelar Resposta (Espaço)
+            if (!this.showAnswer && (event.code === 'Space' || event.key === ' ')) {
+                event.preventDefault(); // Previne o scroll da página
+                this.reveal();
+                return;
+            }
+
+            // 2. Submeter Revisão (Teclas 1, 2, 3, 4) - APENAS se a resposta estiver visível
+            if (this.showAnswer) {
+                switch (event.key) {
+                    case '1':
+                        this.submitReview('again');
+                        break;
+                    case '2':
+                        this.submitReview('hard');
+                        break;
+                    case '3':
+                        this.submitReview('good');
+                        break;
+                    case '4':
+                        this.submitReview('easy');
+                        break;
+                }
+            }
+        }
+    }));
+});
+
+
 Alpine.start();
 
 window.Sortable = Sortable;
